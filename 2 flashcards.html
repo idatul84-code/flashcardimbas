@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kad Imbas — Peristilahan Bahasa Melayu</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1410;
+    --paper: #f5f0e8;
+    --cream: #ede6d3;
+    --gold: #c9963a;
+    --gold-light: #e8c97a;
+    --rust: #b04a2a;
+    --teal: #2a6b6e;
+    --teal-light: #4a9b9e;
+    --shadow: rgba(26, 20, 16, 0.15);
+    --shadow-deep: rgba(26, 20, 16, 0.35);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 4rem;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Subtle paper texture via pseudo-element */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 28px,
+        rgba(180,160,120,0.07) 28px,
+        rgba(180,160,120,0.07) 29px
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Header ── */
+  header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--rust);
+  }
+
+  .divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), var(--teal));
+    margin: 1rem auto 0;
+    border-radius: 2px;
+  }
+
+  /* ── Progress bar ── */
+  .progress-wrap {
+    width: 100%;
+    max-width: 520px;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.4rem;
+  }
+
+  .progress-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--teal);
+    font-weight: 500;
+  }
+
+  .progress-pct {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--gold);
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--cream);
+    border-radius: 99px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px var(--shadow);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal), var(--gold));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ── Card Scene ── */
+  .scene {
+    width: 100%;
+    max-width: 520px;
+    perspective: 1200px;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2rem;
+  }
+
+  .card {
+    width: 100%;
+    min-height: 280px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+
+  .card.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    min-height: 280px;
+    border-radius: 16px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2.5rem 2rem;
+    text-align: center;
+  }
+
+  /* Front face */
+  .card-front {
+    background: #fff;
+    border: 1.5px solid rgba(201,150,58,0.25);
+    box-shadow:
+      0 2px 0 var(--cream),
+      0 6px 24px var(--shadow),
+      0 1px 0 rgba(255,255,255,0.9) inset;
+  }
+
+  .card-front::before {
+    content: 'SOALAN';
+    position: absolute;
+    top: 1rem;
+    left: 1.2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    opacity: 0.7;
+  }
+
+  .card-front::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--teal), var(--gold));
+    border-radius: 0 0 16px 16px;
+  }
+
+  /* Back face */
+  .card-back {
+    background: var(--ink);
+    transform: rotateY(180deg);
+    border: 1.5px solid rgba(201,150,58,0.3);
+    box-shadow:
+      0 6px 24px var(--shadow-deep),
+      0 1px 0 rgba(255,255,255,0.05) inset;
+  }
+
+  .card-back::before {
+    content: 'JAWAPAN';
+    position: absolute;
+    top: 1rem;
+    left: 1.2rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    color: var(--gold-light);
+    opacity: 0.7;
+  }
+
+  .card-back::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--teal-light));
+    border-radius: 0 0 16px 16px;
+  }
+
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .answer-text {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+    line-height: 1.5;
+    color: #fff;
+  }
+
+  .answer-text em {
+    font-style: normal;
+    color: var(--gold-light);
+  }
+
+  /* Hint at bottom of front */
+  .flip-hint {
+    position: absolute;
+    bottom: 1.1rem;
+    right: 1.3rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: var(--teal);
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .flip-hint svg { width: 11px; height: 11px; }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn {
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    border-radius: 99px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .btn-icon {
+    width: 48px;
+    height: 48px;
+    background: #fff;
+    border: 1.5px solid var(--cream);
+    box-shadow: 0 2px 8px var(--shadow);
+    justify-content: center;
+    color: var(--ink);
+    font-size: 1.1rem;
+  }
+
+  .btn-icon:hover {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(42,107,110,0.35);
+  }
+
+  .btn-icon:active { transform: translateY(0); }
+
+  .btn-flip {
+    padding: 0.75rem 1.8rem;
+    background: var(--teal);
+    color: #fff;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    box-shadow: 0 4px 14px rgba(42,107,110,0.3);
+  }
+
+  .btn-flip:hover {
+    background: var(--teal-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(42,107,110,0.4);
+  }
+
+  .btn-flip:active { transform: translateY(0); }
+
+  /* ── Rating buttons ── */
+  .rating-section {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+  }
+
+  .rating-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+    opacity: 0.45;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .rating-btns {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+
+  .btn-rate {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1.5px solid;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .btn-rate.hard {
+    background: transparent;
+    border-color: var(--rust);
+    color: var(--rust);
+  }
+
+  .btn-rate.hard:hover {
+    background: var(--rust);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  .btn-rate.ok {
+    background: transparent;
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .btn-rate.ok:hover {
+    background: var(--gold);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  .btn-rate.easy {
+    background: transparent;
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+
+  .btn-rate.easy:hover {
+    background: var(--teal);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+
+  /* ── Stats bar ── */
+  .stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .stat {
+    text-align: center;
+    min-width: 60px;
+  }
+
+  .stat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-lbl {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.5;
+  }
+
+  .stat.hard .stat-val { color: var(--rust); }
+  .stat.ok .stat-val { color: var(--gold); }
+  .stat.easy .stat-val { color: var(--teal); }
+
+  /* ── Done screen ── */
+  .done-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    max-width: 400px;
+    padding: 2.5rem 2rem;
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px solid rgba(201,150,58,0.25);
+    box-shadow: 0 6px 30px var(--shadow);
+  }
+
+  .done-screen.active { display: flex; }
+
+  .done-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .done-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+    color: var(--ink);
+  }
+
+  .done-screen p {
+    font-size: 0.9rem;
+    color: var(--ink);
+    opacity: 0.6;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .done-stats {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-restart {
+    padding: 0.75rem 2rem;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 99px;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px var(--shadow);
+  }
+
+  .btn-restart:hover {
+    background: var(--teal);
+    transform: translateY(-2px);
+  }
+
+  /* ── Shuffle badge ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.7rem;
+    background: var(--cream);
+    border-radius: 99px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    opacity: 0.6;
+    margin-top: 0.75rem;
+  }
+
+  /* KaTeX-like math rendering */
+  .math {
+    font-family: 'DM Mono', monospace;
+    font-style: normal;
+    background: rgba(201,150,58,0.1);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: var(--rust);
+  }
+
+  /* card entry animation */
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .scene { animation: cardIn 0.4s ease both; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  header { animation: fadeIn 0.6s ease both; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">Kad Imbas · Peristilahan</div>
+  <h1>Bahasa <em>Melayu</em></h1>
+  <div class="divider"></div>
+  <div class="badge">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+    Kad dipaparkan secara rawak
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-meta">
+    <span class="progress-count" id="prog-count">1 / 97</span>
+    <span class="progress-pct" id="prog-pct">1%</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="prog-fill" style="width:1%"></div>
+  </div>
+</div>
+
+<div class="scene" id="scene">
+  <div class="card" id="card" onclick="flipCard()">
+    <div class="card-face card-front">
+      <p class="question-text" id="q-text"></p>
+      <div class="flip-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+        klik untuk balik
+      </div>
+    </div>
+    <div class="card-face card-back">
+      <p class="answer-text" id="a-text"></p>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn btn-icon" onclick="prevCard()" title="Sebelumnya">&#8592;</button>
+  <button class="btn btn-flip" onclick="flipCard()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/></svg>
+    Balik Kad
+  </button>
+  <button class="btn btn-icon" onclick="nextCard()" title="Seterusnya">&#8594;</button>
+</div>
+
+<div class="rating-section" id="rating-section" style="display:none">
+  <div class="rating-label">Bagaimana prestasi anda?</div>
+  <div class="rating-btns">
+    <button class="btn-rate hard" onclick="rateCard('hard')">✗ Susah</button>
+    <button class="btn-rate ok" onclick="rateCard('ok')">~ OK</button>
+    <button class="btn-rate easy" onclick="rateCard('easy')">✓ Mudah</button>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat hard">
+    <div class="stat-val" id="s-hard">0</div>
+    <div class="stat-lbl">Susah</div>
+  </div>
+  <div class="stat ok">
+    <div class="stat-val" id="s-ok">0</div>
+    <div class="stat-lbl">OK</div>
+  </div>
+  <div class="stat easy">
+    <div class="stat-val" id="s-easy">0</div>
+    <div class="stat-lbl">Mudah</div>
+  </div>
+</div>
+
+<!-- Done screen -->
+<div class="done-screen" id="done-screen">
+  <div class="done-icon">🎓</div>
+  <h2>Tahniah!</h2>
+  <p>Anda telah melalui semua <strong>97 kad imbas</strong>.<br>Semak semula kad yang susah untuk menguatkan ingatan.</p>
+  <div class="done-stats">
+    <div class="stat hard">
+      <div class="stat-val" id="d-hard">0</div>
+      <div class="stat-lbl">Susah</div>
+    </div>
+    <div class="stat ok">
+      <div class="stat-val" id="d-ok">0</div>
+      <div class="stat-lbl">OK</div>
+    </div>
+    <div class="stat easy">
+      <div class="stat-val" id="d-easy">0</div>
+      <div class="stat-lbl">Mudah</div>
+    </div>
+  </div>
+  <button class="btn-restart" onclick="restart()">↺ Mula Semula</button>
+</div>
+
+<script>
+const RAW = [
+["Apakah takrif bagi istilah mengikut pedoman ini?","Kata atau gabungan kata yang menerangkan makna, konsep, proses, keadaan atau ciri khusus dalam bidang tertentu."],
+["Kumpulan peraturan untuk membentuk istilah dan kumpulan istilah yang dihasilkannya dikenali sebagai _____.","tataistilah"],
+["Apakah perbezaan antara tataistilah dan tatanama?","Tataistilah adalah peraturan membentuk istilah, manakala tatanama adalah peraturan menentukan nama dalam bidang ilmu."],
+["Bagaimanakah kata umum boleh berubah menjadi istilah?","Apabila penggunaannya dan maknanya menjadi khusus pada bidang tertentu."],
+["Unit terkecil dalam bahasa yang mengandungi makna atau fungsi nahu disebut sebagai _____.","morfem"],
+["Apakah tiga proses utama pembentukan istilah bahasa Melayu?","Pengimbuhan, penggandaan, dan penggabungan."],
+["Istilah yang belum mendapat imbuhan, seperti 'rumah' atau 'asid', dikategorikan sebagai _____.","kata akar"],
+["Proses pembentukan istilah 'berinteraksi' daripada akar 'interaksi' menggunakan imbuhan 'ber-' ialah _____.","pengimbuhan"],
+["Apakah contoh istilah yang terhasil melalui proses penggandaan sebahagian?","rerambut"],
+["Contoh istilah 'kacang-kacang' dibentuk melalui proses _____ seluruh.","penggandaan"],
+["Istilah 'bumiputera' dan 'warganegara' adalah contoh istilah dalam bentuk _____.","gabungan"],
+["Bentuk istilah yang boleh berdiri sendiri atau menjadi dasar pembentukan istilah lebih luas dipanggil _____.","kata akar bebas"],
+["Istilah 'keberkesanan' dan 'angkasawan' dikategorikan dalam bentuk _____.","berimbuhan"],
+["Apakah yang dimaksudkan dengan bentuk prototaip dalam peristilahan?","Kata yang masih mengekalkan bentuk bahasa sumber dan belum disesuaikan ke dalam bahasa Melayu."],
+["Kumpulan kata yang dibentuk daripada satu akar yang sama melalui pola tertentu dipanggil _____.","paradigma kata"],
+["Apakah syarat utama bagi kata umum bahasa Melayu untuk dijadikan istilah?","Tepat memberi makna, paling singkat, dan tidak mempunyai konotasi buruk atau sebutan sumbang."],
+["Jika istilah tidak ditemui dalam bahasa Melayu, sumber manakah yang harus dirujuk seterusnya?","Bahasa-bahasa yang serumpun dengan bahasa Melayu."],
+["Istilah 'gambut' diambil daripada bahasa _____ untuk merujuk kepada 'peat'.","Banjar"],
+["Bahasa asing manakah yang menjadi sumber utama bagi istilah antarabangsa demi keseragaman?","Bahasa Inggeris"],
+["Atas dasar apakah istilah asing boleh dipinjam secara langsung?","Sesuai makna, lebih singkat daripada terjemahan, dan memudahkan penyelarasan sinonim."],
+["Dalam prinsip penyerapan, bentuk _____ istilah asing biasanya diambil, kecuali bagi kes seperti 'bakteria'.","tunggal"],
+["Mengapakah istilah 'pencen' dan 'kastam' dikekalkan walaupun tidak mengikut peraturan ejaan baru?","Kerana sudah lama digunakan (lazim) dan untuk mengelakkan kekacauan."],
+["Apakah syarat penulisan bagi ungkapan asing yang ejaannya kekal, seperti 'bona fide'?","Diberi garis bawah atau dicetak miring."],
+["Istilah 'petani' merujuk kepada pelaku, manakala 'pertanian' merujuk kepada _____.","hal atau keadaan"],
+["Dalam proses pengimbuhan, jika 'penyedia' adalah pelaku, apakah istilah bagi hasil proses tersebut?","sediaan"],
+["Istilah 'jejari' dan 'rerumput' mengungkapkan konsep _____ atau kemiripan.","keanekaan"],
+["Bilakah tanda hubung perlu digunakan dalam penulisan istilah gabungan kata?","Apabila perlu menegaskan pengertian di antara dua unsurnya."],
+["Proses pembentukan istilah 'prasyarat' berdasarkan acuan 'prasangka' dipanggil proses _____.","analogi bentuk"],
+["Dalam penterjemahan istilah, apakah kriteria yang lebih penting daripada makna harfiah?","Ketepatan makna."],
+["Istilah 'bound morpheme' diterjemahkan sebagai 'morfem terikat' bukannya 'morfem tak bebas' mengikut prinsip penterjemahan bentuk _____.","positif"],
+["Apakah yang dimaksudkan dengan istilah yang diutamakan dalam konteks kesinoniman?","Istilah yang paling sesuai dengan prinsip peristilahan dan dijadikan bentuk baku."],
+["Istilah 'nitrogen' digunakan manakala istilah '_____ ' ditinggalkan kerana tidak baku.","zat lemas"],
+["Bagaimanakah cara mengendalikan sekumpulan istilah asing yang hampir sama tetapi berbeza laras, seperti 'law' dan 'regulation'?","Diterjemahkan dengan istilah yang berlainan mengikut konteks."],
+["Kata yang mempunyai ejaan yang sama tetapi sebutan atau makna yang berbeza dipanggil _____.","homograf"],
+["Contoh homofon dalam bahasa Melayu yang merujuk kepada kumpulan dan benda yang dilipat ialah _____ dan _____.","golongan dan gulungan"],
+["Istilah 'bunga' adalah superordinat, manakala 'mawar' ialah _____.","hiponim"],
+["Mengapakah istilah 'liquid' tidak boleh diterjemahkan sebagai 'air' atau 'minyak'?","Kerana superordinat tidak boleh diterjemahkan dengan salah satu hiponimnya."],
+["Kata yang mempunyai banyak makna yang berkaitan menurut konteks penggunaannya dipanggil _____.","polisem"],
+["Apakah istilah bagi singkatan yang terbentuk daripada gabungan huruf pangkal setiap kata?","akronim"],
+["Lambang unit dasar bagi arus elektrik dalam Sistem Unit Antarabangsa (SI) ialah _____.","A"],
+["Apakah lambang bagi kuantiti fizik suhu termodinamik?","K"],
+["Mengapakah lambang unit 'newton' ditulis dengan huruf kecil 'N' bukannya huruf besar?","Untuk membezakannya daripada nama peribadi orang."],
+["Apakah awalan bagi pecahan unit 10⁻⁹?","nano"],
+["Dalam Sistem Unit Antarabangsa, awalan bagi gandaan 10⁶ ialah _____.","mega"],
+["Bagaimanakah penulisan bilangan perpuluhan yang kurang daripada satu yang betul?","Mesti dimulai dengan angka sifar sebelum titik (contoh: 0.52)"],
+["Bagaimanakah cara memisahkan kelompok tiga angka dalam jadual tanpa menggunakan titik atau koma?","Menggunakan ruang (space)."],
+["Apakah jenis ejaan yang digunakan untuk membezakan 'masa' dan 'massa'?","Ejaan etimologi"],
+["Penulisan sebutan yang menunjukkan bunyi dalam bahasa yang bersangkutan dikenali sebagai _____.","transkripsi"],
+["Istilah asing 'haemoglobin' disesuaikan ejaannya menjadi _____.","hemoglobin"],
+["Bagaimanakah gugus 'ae' yang tidak bervariasi dengan 'e' dieja dalam istilah 'aerial'?","Kekal sebagai 'ae'."],
+["Huruf 'c' sebelum 'e', 'i', 'oe', dan 'y' dalam istilah asing ditukar menjadi _____.","s"],
+["Istilah 'cent' dan 'efficient' disesuaikan menjadi _____ dan _____.","sen dan efisien"],
+["Bagaimanakah pengejaan 'cc' sebelum 'e' dan 'i' disesuaikan?","Menjadi 'ks' (contoh: vaksin)."],
+["Gugus 'ch' yang diucapkan sebagai 'k' sebelum 'a', 'o' dan konsonan menjadi _____.","k"],
+["Istilah 'cheque' dieja sebagai _____ dalam bahasa Melayu.","cek"],
+["Vokal ganda 'ee' dalam istilah asing seperti 'jeep' ditukar menjadi _____.","i"],
+["Gugus 'ie' di akhir kata seperti 'calorie' disesuaikan menjadi _____.","i"],
+["Istilah 'pie' dieja sebagai _____ kerana ia merupakan kata ekasuku.","pai"],
+["Vokal ganda 'oo' yang membawa maksud vokal tunggal dalam 'monsoon' menjadi _____.","u"],
+["Istilah 'zoology' mengekalkan ejaan 'oo' kerana ia merupakan _____.","vokal ganda"],
+["Gugus 'ou' yang dilafazkan sebagai [au] seperti dalam 'accountant' dieja sebagai _____.","au"],
+["Huruf 'ph' dalam istilah 'physiology' ditukar menjadi _____.","f"],
+["Gugus 'sc' sebelum 'e' dan 'i' dalam 'scenario' disesuaikan menjadi _____.","s"],
+["Bagaimanakah penyesuaian ejaan 'th' dalam istilah 'theory'?","Menjadi 't' (teori)."],
+["Gugus 'ue' di akhir kata selepas 'q' atau 'g' dalam 'dialogue' hendaklah _____.","digugurkan"],
+["Huruf 'x' pada awal kata disesuaikan menjadi _____.","x"],
+["Huruf 'x' pada posisi tengah atau akhir kata disesuaikan menjadi _____.","ks"],
+["Konsonan ganda dalam istilah asing biasanya disesuaikan menjadi _____.","konsonan tunggal"],
+["Awalan asing 'amphi-' disesuaikan menjadi _____.","amfi-"],
+["Akhiran asing '-ity' disesuaikan menjadi _____.","‑iti"],
+["Akhiran '-ism' yang membawa pengertian doktrin atau teori ditukar menjadi _____.","‑isme"],
+["Gugus konsonan 'ps-' pada awal kata seperti 'psychology' dikekalkan ejaannya sebagai _____.","ps"],
+["Apakah yang berlaku kepada gugus konsonan '-st' di akhir kata 'pessimist'?","Konsonan terakhir ditanggalkan (menjadi pesimis)."],
+["Gugus konsonan '-ct' di akhir kata disesuaikan dengan menanggalkan 't', kecuali bagi kata _____ dan _____.","akta dan fakta"],
+["Bagaimanakah penyesuaian ejaan bagi gugus '-rm' di akhir kata seperti 'sperm'?","Ditambah huruf vokal 'a' di hujung (menjadi sperma)."],
+["Apakah pengejaan yang betul bagi gugus '-lm' dalam kata 'film' mengikut kelaziman?","filem"],
+["Unit keamatan luminus dalam SI ialah _____.","candela"],
+["Lambang unit bagi 'kuantiti zat' ialah _____.","mol"],
+["Awalan 10³ dikenali sebagai _____.","kilo"],
+["Awalan 10⁻² dikenali sebagai _____.","senti"],
+["Bagaimanakah ejaan istilah 'system' disesuaikan ke dalam bahasa Melayu?","sistem"],
+["Istilah 'efficient' disesuaikan mengikut peraturan 'c' sebelum 'i' menjadi _____.","efisien"],
+["Pengejaan 'cc' sebelum 'u' dalam 'accumulation' menjadi _____.","k"],
+["Gugus 'ch' yang dilafazkan sebagai 's' dalam 'chiffon' menjadi _____.","s"],
+["Istilah 'beaker' disesuaikan daripada 'ea' yang dilafazkan sebagai [i] menjadi _____.","bikar"],
+["Vokal 'u' dikekalkan dalam istilah 'nucleus' yang berasal daripada gugus _____.","eu"],
+["Gugus 'ie' di akhir kata ekasuku 'tie' dieja sebagai _____.","tai"],
+["Istilah 'coupon' disesuaikan daripada 'ou' yang dilafazkan sebagai [u] menjadi _____.","kupon"],
+["Bagaimanakah ejaan 'rhythm' disesuaikan?","ritma"],
+["Gugus 'sc' sebelum 'a' dalam 'scandium' menjadi _____.","sk"],
+["Gugus 'ue' di akhir kata 'tissue' menjadi _____.","tisu"],
+["Ejaan 'y' yang tidak terletak di awal kata ditukar menjadi _____.","i"],
+["Awalan 'extra-' disesuaikan menjadi _____.","ekstra-"],
+["Awalan 'poly-' disesuaikan menjadi _____.","poli-"],
+["Akhiran '-ic' atau '-ique' disesuaikan menjadi _____.","‑ik"],
+["Akhiran '-sion' atau '-tion' disesuaikan menjadi _____.","‑si"],
+["Gugus konsonan awal 'phl-' dalam 'phloem' disesuaikan menjadi _____.","fl"],
+["Gugus konsonan awal 'sph-' dalam 'sphere' disesuaikan menjadi _____.","sf"],
+["Gugus konsonan akhir '-ns' seperti dalam 'science' disesuaikan menjadi _____.","sains"],
+["Bagaimanakah ejaan 'complex' disesuaikan di bahagian akhir kata?","kompleks"],
+];
+
+// Shuffle
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+let cards = shuffle(RAW);
+let idx = 0;
+let flipped = false;
+let ratings = { hard: 0, ok: 0, easy: 0 };
+
+const card = document.getElementById('card');
+const qText = document.getElementById('q-text');
+const aText = document.getElementById('a-text');
+const progFill = document.getElementById('prog-fill');
+const progCount = document.getElementById('prog-count');
+const progPct = document.getElementById('prog-pct');
+const ratingSection = document.getElementById('rating-section');
+const doneScreen = document.getElementById('done-screen');
+const scene = document.getElementById('scene');
+
+function renderCard() {
+  if (idx >= cards.length) { showDone(); return; }
+  const [q, a] = cards[idx];
+  qText.textContent = q;
+  aText.textContent = a;
+  card.classList.remove('flipped');
+  flipped = false;
+  ratingSection.style.display = 'none';
+
+  const pct = Math.round((idx / cards.length) * 100);
+  progFill.style.width = Math.max(1, pct) + '%';
+  progCount.textContent = (idx + 1) + ' / ' + cards.length;
+  progPct.textContent = pct + '%';
+
+  // Animate scene in
+  scene.style.animation = 'none';
+  scene.offsetHeight; // reflow
+  scene.style.animation = 'cardIn 0.35s ease both';
+}
+
+function flipCard() {
+  card.classList.toggle('flipped');
+  flipped = !flipped;
+  if (flipped) {
+    ratingSection.style.display = 'block';
+    ratingSection.style.animation = 'fadeIn 0.3s ease';
+  } else {
+    ratingSection.style.display = 'none';
+  }
+}
+
+function nextCard() {
+  if (idx < cards.length - 1) { idx++; renderCard(); }
+  else if (idx === cards.length - 1) { showDone(); }
+}
+
+function prevCard() {
+  if (idx > 0) { idx--; renderCard(); }
+}
+
+function rateCard(level) {
+  ratings[level]++;
+  document.getElementById('s-hard').textContent = ratings.hard;
+  document.getElementById('s-ok').textContent = ratings.ok;
+  document.getElementById('s-easy').textContent = ratings.easy;
+  idx++;
+  if (idx >= cards.length) { showDone(); } else { renderCard(); }
+}
+
+function showDone() {
+  scene.style.display = 'none';
+  document.querySelector('.controls').style.display = 'none';
+  ratingSection.style.display = 'none';
+  document.querySelector('.progress-wrap').style.display = 'none';
+  document.getElementById('d-hard').textContent = ratings.hard;
+  document.getElementById('d-ok').textContent = ratings.ok;
+  document.getElementById('d-easy').textContent = ratings.easy;
+  doneScreen.classList.add('active');
+}
+
+function restart() {
+  cards = shuffle(RAW);
+  idx = 0;
+  ratings = { hard: 0, ok: 0, easy: 0 };
+  document.getElementById('s-hard').textContent = 0;
+  document.getElementById('s-ok').textContent = 0;
+  document.getElementById('s-easy').textContent = 0;
+  doneScreen.classList.remove('active');
+  scene.style.display = '';
+  document.querySelector('.controls').style.display = '';
+  document.querySelector('.progress-wrap').style.display = '';
+  renderCard();
+}
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextCard();
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prevCard();
+  else if (e.key === ' ') { e.preventDefault(); flipCard(); }
+  else if (e.key === '1') rateCard('hard');
+  else if (e.key === '2') rateCard('ok');
+  else if (e.key === '3') rateCard('easy');
+});
+
+renderCard();
+</script>
+</body>
+</html>
